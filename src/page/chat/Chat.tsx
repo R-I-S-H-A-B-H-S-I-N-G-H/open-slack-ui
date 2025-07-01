@@ -42,7 +42,6 @@ export default function Chat() {
         });
 
         getAllUserName(userIdArray).then((res) => {
-            console.log(res);
             if (!res) return;
             setUserIdToUser({ ...res });
         });

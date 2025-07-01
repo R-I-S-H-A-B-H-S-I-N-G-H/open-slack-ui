@@ -69,7 +69,7 @@ export function Mail({
                 <ResizableHandle />
                 <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
                     <ChatDisplay
-                        mail={
+                        chat={
                             chats.find((item) => item.isSelected || true) ||
                             null
                         }

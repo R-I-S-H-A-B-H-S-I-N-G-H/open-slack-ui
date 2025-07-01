@@ -7,71 +7,94 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
+import { getChatsByUserId } from "@/utils/chatDbUtil";
+import { useEffect, useState } from "react";
+import { sendChat } from "@/api/chatApi";
 
 interface MailDisplayProps {
-    mail: ChatSchema | null;
+    chat: ChatSchema | null;
     userIdToUser: {
         [key: string]: ContactSchema;
     };
 }
 
-export function ChatDisplay({
-    mail: chat,
-    userIdToUser = {},
-}: MailDisplayProps) {
+export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
+    const contactId = chat?.recepientId; //need to change this in future
+    const [chatHistory, setChatHistory] = useState<ChatSchema[]>([]);
+    const [msg, setMessage] = useState("");
+
     function getUserName(userShortId: string) {
         const user = userIdToUser[userShortId];
         if (!user) return userShortId;
         return user.username;
     }
 
+    useEffect(() => {
+        getChatsByUserId(chat?.recepientId ?? "").then((res) => {
+            const chatHis = res;
+            setChatHistory([...chatHis]);
+        });
+    }, [chat]);
+
     return (
         <div className="flex h-full flex-col">
-            {chat ? (
-                <div className="flex flex-1 flex-col">
-                    {/* <Separator /> */}
-                    <div className="flex justify-center align-middle">
-                        <Avatar>
-                            <AvatarImage alt={chat?.userId} />
-                            <AvatarFallback>
-                                {chat?.userId
-                                    .split(" ")
-                                    .map((chunk) => chunk[0])
-                                    .join("")}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 p-4 text-sm whitespace-pre-wrap">
-                            {chat.message}
-                        </div>
-                    </div>
-                    <Separator className="mt-auto" />
-                    <div className="p-4">
-                        <form>
-                            <div className="grid gap-4">
-                                <Textarea
-                                    className="p-4"
-                                    placeholder={`Reply ${getUserName(
-                                        chat?.recepientId
-                                    )}...`}
-                                />
-                                <div className="flex items-center">
-                                    <Button
-                                        onClick={(e) => e.preventDefault()}
-                                        size="sm"
-                                        className="ml-auto"
-                                    >
-                                        Send
-                                    </Button>
-                                </div>
+            <div className="flex flex-1 flex-col">
+                {chatHistory.map(({ userId, recepientId, message }) => {
+                    const username = getUserName(userId);
+                    return (
+                        <div className="flex justify-center align-middle">
+                            <Avatar>
+                                <AvatarImage alt={chat?.userId} />
+                                <AvatarFallback>
+                                    {username
+                                        .split(" ")
+                                        .map((chunk) => chunk[0])
+                                        .join("")}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 p-4 text-sm whitespace-pre-wrap">
+                                {message}
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                    );
+                })}
+                <Separator className="mt-auto" />
+                <div className="p-4">
+                    <form>
+                        <div className="grid gap-4">
+                            <Textarea
+                                className="p-4"
+                                placeholder={`Reply ${getUserName(
+                                    chat?.recepientId
+                                )}...`}
+                                value={msg}
+                                onChange={(e) => {
+                                    setMessage(e.target.value);
+                                }}
+                            />
+                            <div className="flex items-center">
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (!contactId) {
+                                            console.log("cannot send msg");
+                                            return;
+                                        }
+                                        sendChat({
+                                            message: msg,
+                                            to: contactId,
+                                        });
+                                    }}
+                                    size="sm"
+                                    className="ml-auto"
+                                >
+                                    Send
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            ) : (
-                <div className="text-muted-foreground p-8 text-center">
-                    No message selected
-                </div>
-            )}
+            </div>
         </div>
     );
 }

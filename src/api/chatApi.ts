@@ -24,3 +24,14 @@ export async function syncContacts() {
     });
     return resp.data;
 }
+
+export async function sendChat(msgPayload: { message: string; to: string }) {
+    const userId = getUserId();
+    const url = `${config.lambdaBaseUrl}/${userId}/chat/send`;
+    const resp = await axios.post(url, msgPayload, {
+        headers: {
+            Authorization: `Bearer ${getJwt()}`,
+        },
+    });
+    return resp.data;
+}
