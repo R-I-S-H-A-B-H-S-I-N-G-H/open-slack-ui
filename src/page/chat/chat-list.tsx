@@ -1,15 +1,25 @@
-import { type ComponentProps } from "react";
+import { useEffect, useState, type ComponentProps } from "react";
 import { formatDistanceToNow } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { ChatSchema } from "@/utils/dbUtil";
+import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
+import { getAllUserName } from "@/utils/contactDbUtil";
 interface MailListProps {
     items: ChatSchema[];
+    userIdToUser: {
+        [key: string]: ContactSchema;
+    };
 }
 
-export function ChatList({ items }: MailListProps) {
+export function ChatList({ items, userIdToUser = {} }: MailListProps) {
+    function getUserName(userShortId: string) {
+        const user = userIdToUser[userShortId];
+        if (!user) return userShortId;
+        return user.username;
+    }
+
     return (
         <ScrollArea className={cn("h-screen")}>
             <div className="flex flex-col gap-2 p-4 pt-0">
@@ -26,7 +36,7 @@ export function ChatList({ items }: MailListProps) {
                             <div className="flex items-center">
                                 <div className="flex items-center gap-2">
                                     <div className="font-semibold">
-                                        {item.recepientId}
+                                        {getUserName(item.recepientId)}
                                     </div>
                                     {!item.isRead && (
                                         <span className="flex h-2 w-2 rounded-full bg-blue-600" />
@@ -35,14 +45,17 @@ export function ChatList({ items }: MailListProps) {
                                 <div
                                     className={cn(
                                         "ml-auto text-xs",
-                                        item.isSelected 
+                                        item.isSelected
                                             ? "text-foreground"
                                             : "text-muted-foreground"
                                     )}
                                 >
-                                    {formatDistanceToNow(new Date(item.createdAt), {
-                                        addSuffix: true,
-                                    })}
+                                    {formatDistanceToNow(
+                                        new Date(item.createdAt),
+                                        {
+                                            addSuffix: true,
+                                        }
+                                    )}
                                 </div>
                             </div>
                             {/* <div className="text-xs font-medium">

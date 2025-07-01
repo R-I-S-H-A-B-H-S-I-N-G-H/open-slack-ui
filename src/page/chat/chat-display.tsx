@@ -6,50 +6,43 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { ChatSchema } from "@/utils/dbUtil";
+import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 
 interface MailDisplayProps {
     mail: ChatSchema | null;
+    userIdToUser: {
+        [key: string]: ContactSchema;
+    };
 }
 
-export function ChatDisplay({ mail: chat }: MailDisplayProps) {
+export function ChatDisplay({
+    mail: chat,
+    userIdToUser = {},
+}: MailDisplayProps) {
+    function getUserName(userShortId: string) {
+        const user = userIdToUser[userShortId];
+        if (!user) return userShortId;
+        return user.username;
+    }
+
     return (
         <div className="flex h-full flex-col">
             {chat ? (
                 <div className="flex flex-1 flex-col">
-                    <div className="flex items-start p-4">
-                        <div className="flex items-start gap-4 text-sm">
-                            <Avatar>
-                                <AvatarImage alt={chat?.userId} />
-                                <AvatarFallback>
-                                    {chat?.userId
-                                        .split(" ")
-                                        .map((chunk) => chunk[0])
-                                        .join("")}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="grid gap-1">
-                                <div className="font-semibold">{chat.recepientId}</div>
-                                {/* <div className="line-clamp-1 text-xs">
-                                    {chat.subject}
-                                </div> */}
-                                <div className="line-clamp-1 text-xs">
-                                    <span className="font-medium">
-                                        Reply-To:
-                                    </span>{" "}
-                                    {chat?.email}
-                                </div>
-                            </div>
+                    {/* <Separator /> */}
+                    <div className="flex justify-center align-middle">
+                        <Avatar>
+                            <AvatarImage alt={chat?.userId} />
+                            <AvatarFallback>
+                                {chat?.userId
+                                    .split(" ")
+                                    .map((chunk) => chunk[0])
+                                    .join("")}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 p-4 text-sm whitespace-pre-wrap">
+                            {chat.message}
                         </div>
-                        {chat.createdAt && (
-                            <div className="text-muted-foreground ml-auto text-xs">
-                                {format(new Date(chat.createdAt), "PPpp")}
-                            </div>
-                        )}
-                    </div>
-                    <Separator />
-                    <div className="flex-1 p-4 text-sm whitespace-pre-wrap">
-                        {chat.message}
                     </div>
                     <Separator className="mt-auto" />
                     <div className="p-4">
@@ -57,19 +50,11 @@ export function ChatDisplay({ mail: chat }: MailDisplayProps) {
                             <div className="grid gap-4">
                                 <Textarea
                                     className="p-4"
-                                    placeholder={`Reply ${chat?.name}...`}
+                                    placeholder={`Reply ${getUserName(
+                                        chat?.recepientId
+                                    )}...`}
                                 />
                                 <div className="flex items-center">
-                                    <Label
-                                        htmlFor="mute"
-                                        className="flex items-center gap-2 text-xs font-normal"
-                                    >
-                                        <Switch
-                                            id="mute"
-                                            aria-label="Mute thread"
-                                        />{" "}
-                                        Mute this thread
-                                    </Label>
                                     <Button
                                         onClick={(e) => e.preventDefault()}
                                         size="sm"
@@ -90,3 +75,39 @@ export function ChatDisplay({ mail: chat }: MailDisplayProps) {
         </div>
     );
 }
+
+
+/**
+ <div className="flex items-start p-4">
+                        <div className="flex items-start gap-4 text-sm">
+                            <Avatar>
+                                <AvatarImage alt={chat?.userId} />
+                                <AvatarFallback>
+                                    {chat?.userId
+                                        .split(" ")
+                                        .map((chunk) => chunk[0])
+                                        .join("")}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="grid gap-1">
+                                <div className="font-semibold">
+                                    {getUserName(chat.recepientId)}
+                                </div>
+                                {/* <div className="line-clamp-1 text-xs">
+                                    {chat.subject}
+                                </div> 
+                                <div className="line-clamp-1 text-xs">
+                                    <span className="font-medium">
+                                        Reply-To:
+                                    </span>{" "}
+                                    {chat?.email}
+                                </div>
+                            </div>
+                        </div>
+                        {chat.createdAt && (
+                            <div className="text-muted-foreground ml-auto text-xs">
+                                {format(new Date(chat.createdAt), "PPpp")}
+                            </div>
+                        )}
+                    </div>
+ */

@@ -14,13 +14,22 @@ export interface ChatSchema {
     isSelected?: boolean;
 }
 
+export interface ContactSchema {
+    shortId: string; // e.g. "user-abc123"
+    username: string; // e.g. "rishabh"
+    avatarUrl?: string; // Optional: for user profile pictures
+    lastSeen?: string; // Optional: ISO timestamp
+}
+
 class OpenSlackDB extends Dexie {
     chats!: Table<ChatSchema, string>;
+    contacts!: Table<ContactSchema, string>;
 
     constructor() {
         super("open-slack");
         this.version(1).stores({
             chats: "_id, userId, recepientId, createdAt, &shortId, isDeleted, isRead",
+            contacts: "&shortId, username, avatarUrl, lastSeen",
         });
     }
 }

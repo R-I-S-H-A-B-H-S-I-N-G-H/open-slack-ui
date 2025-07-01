@@ -12,3 +12,15 @@ export async function syncChats() {
     });
     return resp.data;
 }
+
+
+export async function syncContacts() {
+    const userId = getUserId();
+    const url = `${config.lambdaBaseUrl}/${userId}/chat/contacts`;
+    const resp = await axios.get(url, {
+        headers: {
+            Authorization: `Bearer ${getJwt()}`,
+        },
+    });
+    return resp.data;
+}

@@ -11,10 +11,13 @@ import {
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ChatList } from "./chat-list";
 import { ChatDisplay } from "./chat-display";
-import type { ChatSchema } from "@/utils/dbUtil";
+import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 
 interface MailProps {
-    chats: ChatSchema[]
+    chats: ChatSchema[];
+    userIdToUser: {
+        [key: string]: ContactSchema;
+    };
     defaultLayout?: number[];
     defaultCollapsed?: boolean;
     navCollapsedSize: number;
@@ -22,10 +25,9 @@ interface MailProps {
 
 export function Mail({
     defaultLayout = [20, 32, 48],
-    chats
+    chats,
+    userIdToUser,
 }: MailProps) {
-    console.log(chats);
-    
     return (
         <div className="w-full h-dvh">
             <ResizablePanelGroup
@@ -51,11 +53,15 @@ export function Mail({
                             </form>
                         </div>
                         <TabsContent value="all" className="m-0 h-screen">
-                            <ChatList items={chats} />
+                            <ChatList
+                                items={chats}
+                                userIdToUser={userIdToUser}
+                            />
                         </TabsContent>
                         <TabsContent value="unread" className="m-0 h-screen">
                             <ChatList
                                 items={chats.filter((item) => !item.isRead)}
+                                userIdToUser={userIdToUser}
                             />
                         </TabsContent>
                     </Tabs>
@@ -67,6 +73,7 @@ export function Mail({
                             chats.find((item) => item.isSelected || true) ||
                             null
                         }
+                        userIdToUser={userIdToUser}
                     />
                 </ResizablePanel>
             </ResizablePanelGroup>
