@@ -11,9 +11,8 @@ createRoot(document.getElementById("root")!).render(
         <Toaster />
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<App />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/chat" element={<Chat />} />
+                <Route path="/" element={<Chat />} />
             </Routes>
         </BrowserRouter>
     </>

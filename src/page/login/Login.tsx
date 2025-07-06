@@ -21,7 +21,7 @@ export default function Login() {
 
     useEffect(() => {
         if (validateSessionJWT()) {
-            // navigate("/");
+            navigate("/");
         }
     },[])
 

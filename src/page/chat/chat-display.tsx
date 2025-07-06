@@ -73,7 +73,7 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
 
     return (
         <div className="flex h-full flex-col">
-            <div className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col min-h-0 overflow-y-auto">
                 {chatHistory.map((chatItem) => {
                     const userId = getUserIdFromChat(chatItem) ?? "";
                     const message = chatItem.message;
@@ -97,11 +97,11 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
                                     </AvatarFallback>
                                 </Avatar>
                             )}
-                            <div className="max-w-xs rounded-lg bg-gray-100 dark:bg-gray-800 p-2 mx-2">
+                            <div className="max-w-xs rounded-lg bg-gray-100 dark:bg-gray-800 p-2 mx-2 break-words overflow-x-auto">
                                 <div className="font-semibold text-xs mb-1">
                                     {getUserName(chatItem.userId)}
                                 </div>
-                                <div className="text-sm whitespace-pre-wrap">
+                                <div className="text-sm whitespace-pre-wrap break-words overflow-x-auto">
                                     {message}
                                 </div>
                             </div>
@@ -119,35 +119,33 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
                         </div>
                     );
                 })}
-                <Separator className="mt-auto" />
-                <div className="p-4">
-                    <form>
-                        <div className="grid gap-4">
-                            <Textarea
-                                className="p-4"
-                                placeholder={`Reply ${getUserName(
-                                    contactId
-                                )}...`}
-                                value={msg}
-                                onChange={(e) => {
-                                    setMessage(e.target.value);
+            </div>
+            <Separator className="mt-auto" />
+            <div className="p-4">
+                <form>
+                    <div className="grid gap-4">
+                        <Textarea
+                            className="p-4"
+                            placeholder={`Reply ${getUserName(contactId)}...`}
+                            value={msg}
+                            onChange={(e) => {
+                                setMessage(e.target.value);
+                            }}
+                        />
+                        <div className="flex items-center">
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    sendMessage();
                                 }}
-                            />
-                            <div className="flex items-center">
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        sendMessage();
-                                    }}
-                                    size="sm"
-                                    className="ml-auto"
-                                >
-                                    Send
-                                </Button>
-                            </div>
+                                size="sm"
+                                className="ml-auto"
+                            >
+                                Send
+                            </Button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     );
