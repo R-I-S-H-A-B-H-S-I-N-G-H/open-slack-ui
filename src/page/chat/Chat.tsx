@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getUserId } from "@/utils/jwtUtil";
 import { syncChats, syncContacts } from "@/api/chatApi";
 import { getAllUserName } from "@/utils/contactDbUtil";
+import { useLiveQuery } from "dexie-react-hooks";
 
 function syncChatFromCloud() {
     syncChats().then(async (res) => {
@@ -19,38 +20,27 @@ function syncChatFromCloud() {
 }
 
 export default function Chat() {
-    const [chatList, setChatList] = useState<ChatSchema[]>([]);
-    const [userIdToUser, setUserIdToUser] = useState<{
-        [key: string]: ContactSchema;
-    }>({});
-    useEffect(() => {
-        syncChatFromCloud();
-        getLatestChatsByUser(getUserId()).then((res) => {
-            setChatList(res);
-        });
+    const chatList = useLiveQuery(async () => {
+        return await getLatestChatsByUser(getUserId());
     }, []);
 
-    useEffect(() => {
-        updateUserIdMap();
-    }, [chatList]);
-
-    async function updateUserIdMap() {
+    const userIdToUser = useLiveQuery(async () => {
         const userIdArray: string[] = [];
-        chatList.forEach((user) => {
+        chatList?.forEach((user) => {
             userIdArray.push(user.recepientId);
             userIdArray.push(user.userId);
         });
+        return await getAllUserName(userIdArray);
+    }, [chatList]);
 
-        getAllUserName(userIdArray).then((res) => {
-            if (!res) return;
-            setUserIdToUser({ ...res });
-        });
-    }
+    useEffect(() => {
+        syncChatFromCloud();
+    }, []);
 
     return (
         <Mail
-            chats={chatList}
-            userIdToUser={userIdToUser}
+            chats={chatList ?? []}
+            userIdToUser={userIdToUser ?? {}}
             navCollapsedSize={4}
         />
     );
