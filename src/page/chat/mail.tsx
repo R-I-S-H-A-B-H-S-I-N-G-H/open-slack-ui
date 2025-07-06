@@ -58,12 +58,6 @@ export function Mail({
                                 userIdToUser={userIdToUser}
                             />
                         </TabsContent>
-                        <TabsContent value="unread" className="m-0 h-screen">
-                            <ChatList
-                                items={chats.filter((item) => !item.isRead)}
-                                userIdToUser={userIdToUser}
-                            />
-                        </TabsContent>
                     </Tabs>
                 </ResizablePanel>
                 <ResizableHandle />

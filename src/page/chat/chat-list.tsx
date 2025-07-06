@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 import { getAllUserName } from "@/utils/contactDbUtil";
+import { getRecipientIdChat } from "./chat-util";
 interface MailListProps {
     items: ChatSchema[];
     userIdToUser: {
@@ -36,7 +37,7 @@ export function ChatList({ items, userIdToUser = {} }: MailListProps) {
                             <div className="flex items-center">
                                 <div className="flex items-center gap-2">
                                     <div className="font-semibold">
-                                        {getUserName(item.recepientId)}
+                                        {getUserName(getRecipientIdChat(item))}
                                     </div>
                                     {!item.isRead && (
                                         <span className="flex h-2 w-2 rounded-full bg-blue-600" />

@@ -4,12 +4,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 import { getChatsByUserId } from "@/utils/chatDbUtil";
 import { useEffect, useState } from "react";
 import { sendChat } from "@/api/chatApi";
+import {
+    getRecipientIdChat,
+    getUserIdFromChat,
+    isSenderUser,
+} from "./chat-util";
+import { getUserId } from "@/utils/jwtUtil";
 
 interface MailDisplayProps {
     chat: ChatSchema | null;
@@ -19,11 +24,12 @@ interface MailDisplayProps {
 }
 
 export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
-    const contactId = chat?.recepientId; //need to change this in future
+    const contactId = getRecipientIdChat(chat);
     const [chatHistory, setChatHistory] = useState<ChatSchema[]>([]);
     const [msg, setMessage] = useState("");
 
-    function getUserName(userShortId: string) {
+    function getUserName(userShortId: string | null) {
+        if (!userShortId) return null;
         const user = userIdToUser[userShortId];
         if (!user) return userShortId;
         return user.username;
@@ -32,29 +38,84 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
     useEffect(() => {
         getChatsByUserId(chat?.recepientId ?? "").then((res) => {
             const chatHis = res;
+            console.log(res);
+
             setChatHistory([...chatHis]);
         });
     }, [chat]);
 
+    async function sendMessage() {
+        console.log(contactId, msg);
+        if (!contactId) {
+            console.log("cannot send msg");
+            return;
+        }
+
+        setChatHistory([
+            ...chatHistory,
+            {
+                message: msg,
+                recepientId: contactId,
+                userId: getUserId(),
+                _id: `${Date.now()}`,
+                isRead: false,
+                isDeleted: false,
+                shortId: `${Date.now()}`,
+                createdAt: Date.now().toString(),
+                __v: 0,
+            },
+        ]);
+        await sendChat({
+            message: msg,
+            to: contactId,
+        });
+    }
+
     return (
         <div className="flex h-full flex-col">
             <div className="flex flex-1 flex-col">
-                {chatHistory.map(({ userId, recepientId, message }) => {
+                {chatHistory.map((chatItem) => {
+                    const userId = getUserIdFromChat(chatItem) ?? "";
+                    const message = chatItem.message;
                     const username = getUserName(userId);
+                    const isSender = isSenderUser(chatItem);
                     return (
-                        <div className="flex justify-center align-middle">
-                            <Avatar>
-                                <AvatarImage alt={chat?.userId} />
-                                <AvatarFallback>
-                                    {username
-                                        .split(" ")
-                                        .map((chunk) => chunk[0])
-                                        .join("")}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 p-4 text-sm whitespace-pre-wrap">
-                                {message}
+                        <div
+                            key={chatItem._id}
+                            className={`flex items-start p-4 ${
+                                isSender ? "justify-end" : "justify-start"
+                            }`}
+                        >
+                            {!isSender && (
+                                <Avatar>
+                                    <AvatarImage alt={userId} />
+                                    <AvatarFallback>
+                                        {username
+                                            ?.split(" ")
+                                            .map((chunk) => chunk[0])
+                                            .join("")}
+                                    </AvatarFallback>
+                                </Avatar>
+                            )}
+                            <div className="max-w-xs rounded-lg bg-gray-100 dark:bg-gray-800 p-2 mx-2">
+                                <div className="font-semibold text-xs mb-1">
+                                    {getUserName(chatItem.userId)}
+                                </div>
+                                <div className="text-sm whitespace-pre-wrap">
+                                    {message}
+                                </div>
                             </div>
+                            {isSender && (
+                                <Avatar>
+                                    <AvatarImage alt={userId} />
+                                    <AvatarFallback>
+                                        {username
+                                            ?.split(" ")
+                                            .map((chunk) => chunk[0])
+                                            .join("")}
+                                    </AvatarFallback>
+                                </Avatar>
+                            )}
                         </div>
                     );
                 })}
@@ -65,7 +126,7 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
                             <Textarea
                                 className="p-4"
                                 placeholder={`Reply ${getUserName(
-                                    chat?.recepientId
+                                    contactId
                                 )}...`}
                                 value={msg}
                                 onChange={(e) => {
@@ -76,14 +137,7 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
                                 <Button
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        if (!contactId) {
-                                            console.log("cannot send msg");
-                                            return;
-                                        }
-                                        sendChat({
-                                            message: msg,
-                                            to: contactId,
-                                        });
+                                        sendMessage();
                                     }}
                                     size="sm"
                                     className="ml-auto"
@@ -98,39 +152,3 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
         </div>
     );
 }
-
-
-/**
- <div className="flex items-start p-4">
-                        <div className="flex items-start gap-4 text-sm">
-                            <Avatar>
-                                <AvatarImage alt={chat?.userId} />
-                                <AvatarFallback>
-                                    {chat?.userId
-                                        .split(" ")
-                                        .map((chunk) => chunk[0])
-                                        .join("")}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="grid gap-1">
-                                <div className="font-semibold">
-                                    {getUserName(chat.recepientId)}
-                                </div>
-                                {/* <div className="line-clamp-1 text-xs">
-                                    {chat.subject}
-                                </div> 
-                                <div className="line-clamp-1 text-xs">
-                                    <span className="font-medium">
-                                        Reply-To:
-                                    </span>{" "}
-                                    {chat?.email}
-                                </div>
-                            </div>
-                        </div>
-                        {chat.createdAt && (
-                            <div className="text-muted-foreground ml-auto text-xs">
-                                {format(new Date(chat.createdAt), "PPpp")}
-                            </div>
-                        )}
-                    </div>
- */
