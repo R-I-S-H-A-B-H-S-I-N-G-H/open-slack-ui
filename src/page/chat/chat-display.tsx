@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 import { getChatsByUserId } from "@/utils/chatDbUtil";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { sendChat } from "@/api/chatApi";
 import {
     getRecipientIdChat,
@@ -27,6 +27,13 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
     const contactId = getRecipientIdChat(chat);
     const [chatHistory, setChatHistory] = useState<ChatSchema[]>([]);
     const [msg, setMessage] = useState("");
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [chatHistory]);
 
     function getUserName(userShortId: string | null) {
         if (!userShortId) return null;
@@ -73,7 +80,10 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
 
     return (
         <div className="flex h-full flex-col">
-            <div className="flex flex-1 flex-col min-h-0 overflow-y-auto">
+            <div
+                ref={scrollRef}
+                className="flex flex-1 flex-col min-h-0 overflow-y-auto"
+            >
                 {chatHistory.map((chatItem) => {
                     const userId = getUserIdFromChat(chatItem) ?? "";
                     const message = chatItem.message;

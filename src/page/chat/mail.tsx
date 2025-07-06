@@ -12,6 +12,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ChatList } from "./chat-list";
 import { ChatDisplay } from "./chat-display";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
+import { useState } from "react";
 
 interface MailProps {
     chats: ChatSchema[];
@@ -28,6 +29,8 @@ export function Mail({
     chats,
     userIdToUser,
 }: MailProps) {
+    const [selectedChat, setSelectedChat] = useState<ChatSchema | undefined>();
+
     return (
         <div className="w-full h-dvh">
             <ResizablePanelGroup
@@ -54,8 +57,9 @@ export function Mail({
                         </div>
                         <TabsContent value="all" className="m-0 h-screen">
                             <ChatList
-                                items={chats}
+                                chatList={chats}
                                 userIdToUser={userIdToUser}
+                                onSelect={setSelectedChat}
                             />
                         </TabsContent>
                     </Tabs>
@@ -64,8 +68,9 @@ export function Mail({
                 <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
                     <ChatDisplay
                         chat={
-                            chats.find((item) => item.isSelected || true) ||
-                            null
+                            chats.find(
+                                (item) => item._id == selectedChat?._id
+                            ) || null
                         }
                         userIdToUser={userIdToUser}
                     />
