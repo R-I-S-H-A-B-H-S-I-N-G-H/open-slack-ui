@@ -1,11 +1,12 @@
 import { db } from "@/utils/dbUtil";
 import { Mail } from "./mail";
 import { useEffect } from "react";
-import { getUserId } from "@/utils/jwtUtil";
+import { getUserId, validateSessionJWT } from "@/utils/jwtUtil";
 import { syncChats, syncContacts } from "@/api/chatApi";
 import { getAllUserName, getContactDisplayList } from "@/utils/contactDbUtil";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getLatestChatsByUser } from "@/utils/chatDbUtil";
+import { useNavigate } from "react-router";
 
 function syncChatFromCloud() {
     syncChats().then(async (res) => {
@@ -20,6 +21,14 @@ function syncChatFromCloud() {
 }
 
 export default function Chat() {
+    let navigate = useNavigate();
+
+    useEffect(() => {
+        if (!validateSessionJWT()) {
+            navigate("/login");
+        }
+    }, []);
+
     const chatList = useLiveQuery(async () => {
         return await getLatestChatsByUser(getUserId());
     }, []);
