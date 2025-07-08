@@ -15,10 +15,12 @@ export interface ChatSchema {
 }
 
 export interface ContactSchema {
-    shortId: string; // e.g. "user-abc123"
-    username: string; // e.g. "rishabh"
-    avatarUrl?: string; // Optional: for user profile pictures
-    lastSeen?: string; // Optional: ISO timestamp
+    shortId: string;
+    username: string;
+    avatarUrl?: string;
+    lastSeen?: string;
+    recentMessage?: string;
+    recentMessageDate?: string;
 }
 
 class OpenSlackDB extends Dexie {

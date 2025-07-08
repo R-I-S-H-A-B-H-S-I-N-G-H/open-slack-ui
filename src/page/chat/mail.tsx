@@ -12,9 +12,10 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ChatList } from "./chat-list";
 import { ChatDisplay } from "./chat-display";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface MailProps {
+    contactList: ContactSchema[];
     chats: ChatSchema[];
     userIdToUser: {
         [key: string]: ContactSchema;
@@ -28,8 +29,17 @@ export function Mail({
     defaultLayout = [20, 32, 48],
     chats,
     userIdToUser,
+    contactList: _contacts,
 }: MailProps) {
-    const [selectedChat, setSelectedChat] = useState<ChatSchema | undefined>();
+    const [selectedContact, setSelectedContact] = useState<
+        ContactSchema | undefined
+    >();
+    const [contactList, setContactList] = useState<ContactSchema[]>(_contacts);
+
+    useEffect(() => {
+        if (!_contacts) return;
+        setContactList([..._contacts]);
+    }, [_contacts]);
 
     return (
         <div className="w-full h-dvh">
@@ -57,9 +67,8 @@ export function Mail({
                         </div>
                         <TabsContent value="all" className="m-0 h-screen">
                             <ChatList
-                                chatList={chats}
-                                userIdToUser={userIdToUser}
-                                onSelect={setSelectedChat}
+                                contactList={contactList}
+                                onSelect={setSelectedContact}
                             />
                         </TabsContent>
                     </Tabs>
@@ -67,9 +76,12 @@ export function Mail({
                 <ResizableHandle />
                 <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
                     <ChatDisplay
+                        contact={selectedContact}
                         chat={
                             chats.find(
-                                (item) => item._id == selectedChat?._id
+                                (item) =>
+                                    item.userId == selectedContact?.shortId ||
+                                    item.recepientId == selectedContact?.shortId
                             ) || null
                         }
                         userIdToUser={userIdToUser}

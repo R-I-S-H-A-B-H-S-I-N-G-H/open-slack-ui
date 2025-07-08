@@ -1,19 +1,12 @@
-import { format } from "date-fns";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 import { getChatsByUserId } from "@/utils/chatDbUtil";
 import { useEffect, useRef, useState } from "react";
 import { sendChat } from "@/api/chatApi";
-import {
-    getRecipientIdChat,
-    getUserIdFromChat,
-    isSenderUser,
-} from "./chat-util";
+import { getUserIdFromChat, isSenderUser } from "./chat-util";
 import { getUserId } from "@/utils/jwtUtil";
 
 interface MailDisplayProps {
@@ -21,10 +14,17 @@ interface MailDisplayProps {
     userIdToUser: {
         [key: string]: ContactSchema;
     };
+    contact: ContactSchema | undefined;
 }
 
-export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
-    const contactId = getRecipientIdChat(chat);
+export function ChatDisplay({
+    chat,
+    userIdToUser = {},
+    contact,
+}: MailDisplayProps) {
+    if (!contact) return <div>not selected</div>;
+
+    const contactId = contact.shortId;
     const [chatHistory, setChatHistory] = useState<ChatSchema[]>([]);
     const [msg, setMessage] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -43,10 +43,8 @@ export function ChatDisplay({ chat, userIdToUser = {} }: MailDisplayProps) {
     }
 
     useEffect(() => {
-        getChatsByUserId(chat?.recepientId ?? "").then((res) => {
+        getChatsByUserId(contactId).then((res) => {
             const chatHis = res;
-            console.log(res);
-
             setChatHistory([...chatHis]);
         });
     }, [chat]);
