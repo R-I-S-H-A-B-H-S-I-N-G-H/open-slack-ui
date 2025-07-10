@@ -25,6 +25,8 @@ export function ChatDisplay({
     if (!contact) return <div>not selected</div>;
 
     const contactId = contact.shortId;
+    const contactUserName = contact.username;
+
     const [chatHistory, setChatHistory] = useState<ChatSchema[]>([]);
     const [msg, setMessage] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -98,7 +100,7 @@ export function ChatDisplay({
                                 <Avatar>
                                     <AvatarImage alt={userId} />
                                     <AvatarFallback>
-                                        {username
+                                        {contactUserName
                                             ?.split(" ")
                                             .map((chunk) => chunk[0])
                                             .join("")}

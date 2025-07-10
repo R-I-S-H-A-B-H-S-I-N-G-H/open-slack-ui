@@ -9,6 +9,8 @@ interface MailListProps {
 }
 
 export function ChatList({ onSelect, contactList }: MailListProps) {
+    console.log(contactList);
+    
     return (
         <ScrollArea className={cn("h-screen")}>
             <div className="flex flex-col gap-2 p-4 pt-0">

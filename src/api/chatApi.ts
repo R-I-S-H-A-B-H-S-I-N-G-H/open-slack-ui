@@ -35,3 +35,10 @@ export async function sendChat(msgPayload: { message: string; to: string }) {
     });
     return resp.data;
 }
+
+export async function getUserList(fuzzyUsername: string) {
+    if (!fuzzyUsername) return [];
+    const url = `${config.lambdaBaseUrl}/user/find?search=${fuzzyUsername}`;
+    const resp = await axios.get(url);
+    return resp.data;
+}
