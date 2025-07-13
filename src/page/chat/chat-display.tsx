@@ -4,10 +4,12 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 import { getChatsByUserId } from "@/utils/chatDbUtil";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { sendChat } from "@/api/chatApi";
 import { getUserIdFromChat, isSenderUser } from "./chat-util";
 import { getUserId } from "@/utils/jwtUtil";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface MailDisplayProps {
     chat: ChatSchema | null;
@@ -29,7 +31,11 @@ export function ChatDisplay({
 
     const [chatHistory, setChatHistory] = useState<ChatSchema[]>([]);
     const [msg, setMessage] = useState("");
+    const [expandedMessages, setExpandedMessages] = useState<{
+        [id: string]: boolean;
+    }>({});
     const scrollRef = useRef<HTMLDivElement>(null);
+    const MAX_MESSAGE_LENGTH = 400;
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -50,6 +56,10 @@ export function ChatDisplay({
             setChatHistory([...chatHis]);
         });
     }, [chat]);
+
+    const toggleExpand = useCallback((id: string) => {
+        setExpandedMessages((prev) => ({ ...prev, [id]: !prev[id] }));
+    }, []);
 
     async function sendMessage() {
         console.log(contactId, msg);
@@ -89,6 +99,9 @@ export function ChatDisplay({
                     const message = chatItem.message;
                     const username = getUserName(userId);
                     const isSender = isSenderUser(chatItem);
+                    const isExpanded = expandedMessages[chatItem._id];
+                    const shouldFold =
+                        message.length > MAX_MESSAGE_LENGTH && !isExpanded;
                     return (
                         <div
                             key={chatItem._id}
@@ -112,7 +125,51 @@ export function ChatDisplay({
                                     {getUserName(chatItem.userId)}
                                 </div>
                                 <div className="text-sm whitespace-pre-wrap break-words overflow-x-auto">
-                                    {message}
+                                    {shouldFold ? (
+                                        <>
+                                            <Markdown
+                                                remarkPlugins={[remarkGfm]}
+                                            >
+                                                {message.slice(
+                                                    0,
+                                                    MAX_MESSAGE_LENGTH
+                                                ) + "..."}
+                                            </Markdown>
+                                            <Button
+                                                variant="link"
+                                                size="sm"
+                                                className="p-0 mt-1 text-xs"
+                                                onClick={() =>
+                                                    toggleExpand(chatItem._id)
+                                                }
+                                            >
+                                                Show more
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Markdown
+                                                remarkPlugins={[remarkGfm]}
+                                            >
+                                                {message}
+                                            </Markdown>
+                                            {message.length >
+                                                MAX_MESSAGE_LENGTH && (
+                                                <Button
+                                                    variant="link"
+                                                    size="sm"
+                                                    className="p-0 mt-1 text-xs"
+                                                    onClick={() =>
+                                                        toggleExpand(
+                                                            chatItem._id
+                                                        )
+                                                    }
+                                                >
+                                                    Show less
+                                                </Button>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             </div>
                             {isSender && (
