@@ -1,6 +1,6 @@
 import { db } from "@/utils/dbUtil";
 import { Mail } from "./mail";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getUserId, validateSessionJWT } from "@/utils/jwtUtil";
 import { syncChats, syncContacts } from "@/api/chatApi";
 import { getAllUserName, getContactDisplayList } from "@/utils/contactDbUtil";
@@ -21,6 +21,7 @@ function syncChatFromCloud() {
 }
 
 export default function Chat() {
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
     let navigate = useNavigate();
 
     useEffect(() => {
@@ -48,6 +49,12 @@ export default function Chat() {
 
     useEffect(() => {
         syncChatFromCloud();
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+        timerRef.current = setInterval(() => {
+            syncChatFromCloud();
+        }, 1000 * 30);
     }, []);
 
     return (
