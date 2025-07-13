@@ -34,7 +34,7 @@ interface MailProps {
 }
 
 export function Mail({
-    defaultLayout = [20, 32, 48],
+    defaultLayout = [15, 20, 48],
     chats,
     userIdToUser,
     contactList: _contacts,
@@ -87,7 +87,7 @@ export function Mail({
                 }}
                 className="h-full  items-stretch"
             >
-                <ResizablePanel defaultSize={defaultLayout[1]}>
+                <ResizablePanel defaultSize={defaultLayout[1]} minSize={18}>
                     <Tabs defaultValue="all">
                         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 p-4 backdrop-blur">
                             <form>
