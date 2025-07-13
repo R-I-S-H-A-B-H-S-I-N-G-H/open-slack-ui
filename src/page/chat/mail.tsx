@@ -15,6 +15,7 @@ import type { ChatSchema, ContactSchema } from "@/utils/dbUtil";
 import { useEffect, useState } from "react";
 import { getUserList } from "@/api/chatApi";
 import { Separator } from "@/components/ui/separator";
+import { useDebouncedCallback } from "use-debounce";
 
 interface userDisplaySchema {
     shortId: string;
@@ -47,6 +48,17 @@ export function Mail({
     const [searchUserList, setSearchUserList] = useState<userDisplaySchema[]>(
         []
     );
+
+    const updateSearchUserList = useDebouncedCallback((search) => {
+        if (!search) {
+            setSearchUserList([]);
+            return;
+        }
+        getUserList(search).then((res) => {
+            if (!res.userList) return;
+            setSearchUserList(res.userList);
+        });
+    }, 1000 * 0.6);
 
     useEffect(() => {
         if (!_contacts) return;
@@ -99,14 +111,17 @@ export function Mail({
                                         className="pl-8"
                                         onChange={(e) => {
                                             setSearchVal(e.target.value);
-                                            getUserList(e.target.value).then(
-                                                (res) => {
-                                                    if (!res.userList) return;
-                                                    setSearchUserList(
-                                                        res.userList
-                                                    );
-                                                }
+                                            updateSearchUserList(
+                                                e.target.value
                                             );
+                                            // getUserList(e.target.value).then(
+                                            //     (res) => {
+                                            //         if (!res.userList) return;
+                                            //         setSearchUserList(
+                                            //             res.userList
+                                            //         );
+                                            //     }
+                                            // );
                                         }}
                                     />
                                 </div>
