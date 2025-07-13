@@ -120,7 +120,7 @@ export function ChatDisplay({
                                     </AvatarFallback>
                                 </Avatar>
                             )}
-                            <div className="max-w-xs rounded-lg bg-gray-100 dark:bg-gray-800 p-2 mx-2 break-words overflow-x-auto">
+                            <div className="max-w-2xl w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-4 mx-2 break-words overflow-x-auto">
                                 <div className="font-semibold text-xs mb-1">
                                     {getUserName(chatItem.userId)}
                                 </div>
@@ -192,7 +192,7 @@ export function ChatDisplay({
                 <form>
                     <div className="grid gap-4">
                         <Textarea
-                            className="p-4"
+                            className="p-4 max-h-64 overflow-y-auto resize-none"
                             placeholder={`Reply ${getUserName(contactId)}...`}
                             value={msg}
                             onChange={(e) => {
