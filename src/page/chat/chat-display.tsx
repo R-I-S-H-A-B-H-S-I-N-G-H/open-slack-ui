@@ -10,6 +10,13 @@ import { getUserIdFromChat, isSenderUser } from "./chat-util";
 import { getUserId } from "@/utils/jwtUtil";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Check, Copy } from "lucide-react";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MailDisplayProps {
     chat: ChatSchema | null;
@@ -34,6 +41,10 @@ export function ChatDisplay({
     const [expandedMessages, setExpandedMessages] = useState<{
         [id: string]: boolean;
     }>({});
+    // State to track the copied status of each message
+    const [copiedStates, setCopiedStates] = useState<{ [id: string]: boolean }>(
+        {}
+    );
     const scrollRef = useRef<HTMLDivElement>(null);
     const MAX_MESSAGE_LENGTH = 400;
 
@@ -61,6 +72,16 @@ export function ChatDisplay({
         setExpandedMessages((prev) => ({ ...prev, [id]: !prev[id] }));
     }, []);
 
+    // Memoized handler for copying text to the clipboard
+    const handleCopy = useCallback((text: string, id: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopiedStates((prev) => ({ ...prev, [id]: true }));
+            setTimeout(() => {
+                setCopiedStates((prev) => ({ ...prev, [id]: false }));
+            }, 2000); // Reset status after 2 seconds
+        });
+    }, []);
+
     async function sendMessage() {
         console.log(contactId, msg);
         if (!contactId) {
@@ -68,6 +89,7 @@ export function ChatDisplay({
             return;
         }
 
+        setMessage("");
         setChatHistory([
             ...chatHistory,
             {
@@ -94,67 +116,82 @@ export function ChatDisplay({
                 ref={scrollRef}
                 className="flex flex-1 flex-col min-h-0 overflow-y-auto"
             >
-                {chatHistory.map((chatItem) => {
-                    const userId = getUserIdFromChat(chatItem) ?? "";
-                    const message = chatItem.message;
-                    const username = getUserName(userId);
-                    const isSender = isSenderUser(chatItem);
-                    const isExpanded = expandedMessages[chatItem._id];
-                    const shouldFold =
-                        message.length > MAX_MESSAGE_LENGTH && !isExpanded;
-                    return (
-                        <div
-                            key={chatItem._id}
-                            className={`flex items-start p-4 ${
-                                isSender ? "justify-end" : "justify-start"
-                            }`}
-                        >
-                            {!isSender && (
-                                <Avatar>
-                                    <AvatarImage alt={userId} />
-                                    <AvatarFallback>
-                                        {contactUserName
-                                            ?.split(" ")
-                                            .map((chunk) => chunk[0])
-                                            .join("")}
-                                    </AvatarFallback>
-                                </Avatar>
-                            )}
-                            <div className="max-w-2xl w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-4 mx-2 break-words overflow-x-auto">
-                                <div className="font-semibold text-xs mb-1">
-                                    {getUserName(chatItem.userId)}
-                                </div>
-                                <div className="text-sm whitespace-pre-wrap break-words overflow-x-auto">
-                                    {shouldFold ? (
-                                        <>
-                                            <Markdown
-                                                remarkPlugins={[remarkGfm]}
-                                            >
-                                                {message.slice(
-                                                    0,
-                                                    MAX_MESSAGE_LENGTH
-                                                ) + "..."}
-                                            </Markdown>
+                <TooltipProvider delayDuration={100}>
+                    {chatHistory.map((chatItem) => {
+                        const userId = getUserIdFromChat(chatItem) ?? "";
+                        const message = chatItem.message;
+                        const username = getUserName(userId);
+                        const isSender = isSenderUser(chatItem);
+                        const isExpanded = expandedMessages[chatItem._id];
+                        const shouldFold =
+                            message.length > MAX_MESSAGE_LENGTH && !isExpanded;
+                        const isCopied = copiedStates[chatItem._id];
+
+                        return (
+                            <div
+                                key={chatItem._id}
+                                className={`flex items-start p-4 ${
+                                    isSender ? "justify-end" : "justify-start"
+                                }`}
+                            >
+                                {!isSender && (
+                                    <Avatar>
+                                        <AvatarImage alt={userId} />
+                                        <AvatarFallback>
+                                            {contactUserName
+                                                ?.split(" ")
+                                                .map((chunk) => chunk[0])
+                                                .join("")}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                )}
+                                {/* Added 'group' and 'relative' for hover effect on child button */}
+                                <div className="group relative max-w-2xl w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-4 mx-2 break-words overflow-x-auto">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            {/* Copy button appears on hover */}
                                             <Button
-                                                variant="link"
-                                                size="sm"
-                                                className="p-0 mt-1 text-xs"
+                                                size="icon"
+                                                variant="ghost"
+                                                className="absolute top-1 right-1 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
                                                 onClick={() =>
-                                                    toggleExpand(chatItem._id)
+                                                    handleCopy(
+                                                        message,
+                                                        chatItem._id
+                                                    )
                                                 }
                                             >
-                                                Show more
+                                                {isCopied ? (
+                                                    <Check className="h-4 w-4 text-green-500" />
+                                                ) : (
+                                                    <Copy className="h-4 w-4" />
+                                                )}
+                                                <span className="sr-only">
+                                                    Copy message
+                                                </span>
                                             </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Markdown
-                                                remarkPlugins={[remarkGfm]}
-                                            >
-                                                {message}
-                                            </Markdown>
-                                            {message.length >
-                                                MAX_MESSAGE_LENGTH && (
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            {isCopied
+                                                ? "Copied!"
+                                                : "Copy to clipboard"}
+                                        </TooltipContent>
+                                    </Tooltip>
+
+                                    <div className="font-semibold text-xs mb-1">
+                                        {getUserName(chatItem.userId)}
+                                    </div>
+                                    <div className="text-sm whitespace-pre-wrap break-words overflow-x-auto">
+                                        {shouldFold ? (
+                                            <>
+                                                <Markdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                >
+                                                    {message.slice(
+                                                        0,
+                                                        MAX_MESSAGE_LENGTH
+                                                    ) + "..."}
+                                                </Markdown>
                                                 <Button
                                                     variant="link"
                                                     size="sm"
@@ -165,27 +202,50 @@ export function ChatDisplay({
                                                         )
                                                     }
                                                 >
-                                                    Show less
+                                                    Show more
                                                 </Button>
-                                            )}
-                                        </>
-                                    )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Markdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                >
+                                                    {message}
+                                                </Markdown>
+                                                {message.length >
+                                                    MAX_MESSAGE_LENGTH && (
+                                                    <Button
+                                                        variant="link"
+                                                        size="sm"
+                                                        className="p-0 mt-1 text-xs"
+                                                        onClick={() =>
+                                                            toggleExpand(
+                                                                chatItem._id
+                                                            )
+                                                        }
+                                                    >
+                                                        Show less
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
+                                {isSender && (
+                                    <Avatar>
+                                        <AvatarImage alt={userId} />
+                                        <AvatarFallback>
+                                            {username
+                                                ?.split(" ")
+                                                .map((chunk) => chunk[0])
+                                                .join("")}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                )}
                             </div>
-                            {isSender && (
-                                <Avatar>
-                                    <AvatarImage alt={userId} />
-                                    <AvatarFallback>
-                                        {username
-                                            ?.split(" ")
-                                            .map((chunk) => chunk[0])
-                                            .join("")}
-                                    </AvatarFallback>
-                                </Avatar>
-                            )}
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </TooltipProvider>
             </div>
             <Separator className="mt-auto" />
             <div className="p-4">
