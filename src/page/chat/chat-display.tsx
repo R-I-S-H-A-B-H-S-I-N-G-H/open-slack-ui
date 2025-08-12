@@ -101,7 +101,7 @@ export function ChatDisplay({
 
     async function sendMessage() {
         console.log(contactId, msg);
-        if (!contactId) {
+        if (!contactId || !msg) {
             console.log("cannot send msg");
             return;
         }
@@ -274,6 +274,12 @@ export function ChatDisplay({
                             value={msg}
                             onChange={(e) => {
                                 setMessage(e.target.value);
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    sendMessage();
+                                }
                             }}
                         />
                         <div className="flex items-center">
