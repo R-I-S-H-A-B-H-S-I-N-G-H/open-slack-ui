@@ -17,6 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Dither from "@/components/Backgrounds/Dither/Dither";
 
 interface MailDisplayProps {
     chat: ChatSchema | null;
@@ -31,7 +32,23 @@ export function ChatDisplay({
     userIdToUser = {},
     contact,
 }: MailDisplayProps) {
-    if (!contact) return <div>not selected</div>;
+    if (!contact)
+        return (
+            <div
+                style={{ width: "100%", height: "100%", position: "relative" }}
+            >
+                <Dither
+                    waveColor={[0.5, 0.5, 0.5]}
+                    disableAnimation={false}
+                    enableMouseInteraction={true}
+                    mouseRadius={0.3}
+                    colorNum={4}
+                    waveAmplitude={0.3}
+                    waveFrequency={3}
+                    waveSpeed={0.05}
+                />
+            </div>
+        );
 
     const contactId = contact.shortId;
     const contactUserName = contact.username;
@@ -146,12 +163,12 @@ export function ChatDisplay({
                                     </Avatar>
                                 )}
                                 {/* Added 'group' and 'relative' for hover effect on child button */}
-                                <div className="group relative max-w-2xl w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-4 mx-2 break-words overflow-x-auto">
+                                <div className="group relative max-w-2xl w-full rounded-lg bg-muted p-4 mx-2 break-words overflow-x-auto">
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             {/* Copy button appears on hover */}
                                             <Button
-                                                size="icon"
+                                                size="icon" 
                                                 variant="ghost"
                                                 className="absolute top-1 right-1 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
                                                 onClick={() =>
@@ -162,7 +179,7 @@ export function ChatDisplay({
                                                 }
                                             >
                                                 {isCopied ? (
-                                                    <Check className="h-4 w-4 text-green-500" />
+                                                    <Check className="h-4 w-4 text-primary" />
                                                 ) : (
                                                     <Copy className="h-4 w-4" />
                                                 )}
