@@ -168,7 +168,7 @@ export function ChatDisplay({
                                         <TooltipTrigger asChild>
                                             {/* Copy button appears on hover */}
                                             <Button
-                                                size="icon" 
+                                                size="icon"
                                                 variant="ghost"
                                                 className="absolute top-1 right-1 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
                                                 onClick={() =>
@@ -269,7 +269,7 @@ export function ChatDisplay({
                 <form>
                     <div className="grid gap-4">
                         <Textarea
-                            className="p-4 max-h-64 overflow-y-auto resize-none"
+                            className="p-4 max-h-64 overflow-y-auto resize-none  focus-visible:ring-1 focus-visible:ring-offset-0"
                             placeholder={`Reply ${getUserName(contactId)}...`}
                             value={msg}
                             onChange={(e) => {

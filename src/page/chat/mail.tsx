@@ -37,7 +37,7 @@ interface MailProps {
 export function Mail({
     defaultLayout = [15, 20, 48],
     chats,
-    userIdToUser,
+    userIdToUser, // eslint-disable-next-line @typescript-eslint/no-unused-vars
     contactList: _contacts,
 }: MailProps) {
     const [selectedContact, setSelectedContact] = useState<
@@ -108,7 +108,7 @@ export function Mail({
                                     <Input
                                         value={searchVal}
                                         placeholder="Search"
-                                        className="pl-8"
+                                        className="h-9 pl-8 focus-visible:ring-1 focus-visible:ring-offset-0"
                                         onChange={(e) => {
                                             setSearchVal(e.target.value);
                                             updateSearchUserList(
@@ -127,7 +127,7 @@ export function Mail({
                                 </div>
 
                                 {searchUserList.length > 0 && (
-                                    <div className="mt-2 space-y-1 rounded-md border bg-muted p-2 max-h-64 overflow-y-auto shadow-sm">
+                                    <div className="mt-2 rounded-md border bg-popover text-popover-foreground shadow-md max-h-64 overflow-y-auto">
                                         {searchUserList.map((user, index) => (
                                             <>
                                                 <div
