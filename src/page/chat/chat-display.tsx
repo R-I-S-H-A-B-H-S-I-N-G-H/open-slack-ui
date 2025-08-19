@@ -17,7 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Dither from "@/components/Backgrounds/Dither/Dither";
+// import Dither from "@/components/Backgrounds/Dither/Dither";
 
 interface MailDisplayProps {
     chat: ChatSchema | null;
@@ -42,7 +42,7 @@ export function ChatDisplay({
                     backgroundColor: "#000000",
                 }}
             >
-                <Dither
+{/*                 <Dither
                     waveColor={[0.5, 0.5, 0.5]}
                     disableAnimation={false}
                     enableMouseInteraction={true}
@@ -51,7 +51,7 @@ export function ChatDisplay({
                     waveAmplitude={0.3}
                     waveFrequency={3}
                     waveSpeed={0.05}
-                />
+                /> */}
 {/*                 <Galaxy
                     mouseRepulsion={true}
                     mouseInteraction={true}
