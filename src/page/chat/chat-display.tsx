@@ -42,7 +42,7 @@ export function ChatDisplay({
                     backgroundColor: "#000000",
                 }}
             >
-                {/* <Dither
+                <Dither
                     waveColor={[0.5, 0.5, 0.5]}
                     disableAnimation={false}
                     enableMouseInteraction={true}
@@ -51,8 +51,8 @@ export function ChatDisplay({
                     waveAmplitude={0.3}
                     waveFrequency={3}
                     waveSpeed={0.05}
-                /> */}
-                <Galaxy
+                />
+{/*                 <Galaxy
                     mouseRepulsion={true}
                     mouseInteraction={true}
                     density={2}
@@ -63,7 +63,7 @@ export function ChatDisplay({
                     rotationSpeed={0.1}
                     repulsionStrength={2}
                     starSpeed={0.1}
-                />
+                /> */}
             </div>
         );
 
