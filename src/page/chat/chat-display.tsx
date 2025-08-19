@@ -17,7 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Galaxy from "@/components/Backgrounds/Galaxy/Galaxy";
+import Dither from "@/components/Backgrounds/Dither/Dither";
 
 interface MailDisplayProps {
     chat: ChatSchema | null;
